@@ -28,13 +28,13 @@ public class CommandAnalyze {
         return fullcmd.toUpperCase();
     }
 
-    public static String[] getParam(String fullcmd) {
+    public static String getParam(String fullcmd) {
         fullcmd = fullcmd.trim();
         int tag = fullcmd.indexOf(" ");
         if (tag > 0) {// 有参命令
-            return fullcmd.substring(tag + 1).split(" ");
+            return fullcmd.substring(tag + 1).trim();
         }
-        return new String[0];
+        return "";
     }
 
     public static FTPCommand getFc(Command cmd) throws IllegalFTPCommandException {

@@ -6,7 +6,7 @@ import lombok.Data;
 public class Command{
     private String uuid;
     private String cmd;
-    private String[] param;
+    private String param;
     private FTPCommand fc;
     private String requestfile;
     private boolean isrest;

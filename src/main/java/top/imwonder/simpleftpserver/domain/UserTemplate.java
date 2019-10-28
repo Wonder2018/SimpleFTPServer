@@ -1,4 +1,4 @@
-package top.imwonder.simpleftpserver.util;
+package top.imwonder.simpleftpserver.domain;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import top.imwonder.simpleftpserver.domain.FTPState;
 import top.imwonder.simpleftpserver.domain.User;
 
 @Slf4j
-public class UserOperating {
+public abstract class UserTemplate {
 
     public void commandABOR(User user, Command cmd) {
     }
@@ -53,14 +53,14 @@ public class UserOperating {
     }
 
     public void commandCWD(User user, Command cmd) {
-        String[] param = cmd.getParam();
-        String path;
-        if (param.length > 0) {
-            if (param[0].startsWith("/")) {
-                path = user.getRootDir() + param[0].substring(1);
+        String path = cmd.getParam();
+        if (path != null && !path.isEmpty()) {
+            if (path.startsWith("/")) {
+                path = user.getRootDir() + path.substring(1);
             } else {
-                path = user.getCurrentDir() + param[0];
+                path = user.getCurrentDir() + path;
             }
+            log.info("user want to cd :{}",path);
             File newDir = new File(path);
             if (newDir.exists()) {
                 user.setCurrentDir(path);
@@ -102,20 +102,16 @@ public class UserOperating {
     }
 
     public void commandLIST(User user, Command cmd) throws IOException {
-        String[] param = cmd.getParam();
+        String path = cmd.getParam();
         try {
-            Socket dataSocket = new Socket(user.getIp(), user.getPort(), user.getCtrlSocket().getLocalAddress(), (int)(Math.random()*1000));
+            Socket dataSocket = new Socket(user.getIp(), user.getPort(), user.getCtrlSocket().getLocalAddress(), (int)(Math.random()*64000+1024));
             PrintWriter ctrlOutput = new PrintWriter(user.getCtrlSocket().getOutputStream());
             PrintWriter dout = new PrintWriter(dataSocket.getOutputStream(), true);
-            // BufferedWriter osw = new BufferedWriter(new OutputStreamWriter(dataSocket.getOutputStream(),"UTF-8"),60);
             ctrlOutput.println("150 print file list...\r");
             ctrlOutput.flush();
-            if (param.length == 0 || param[0].equals("-a")) {
-                // osw.write(new String(generateFileList(new File(user.getCurrentDir())).getBytes(),"UTF-8"));
-                // osw.flush();
+            if (path == null || path.isEmpty() || path.equals("-a")) {
                 dout.print(generateFileList(new File(user.getCurrentDir())));
             } else {
-                String path = param[0];
                 if (path.startsWith("/")) {
                     path = user.getRootDir() + path.substring(1);
                     File newDir = new File(path);
@@ -216,7 +212,7 @@ public class UserOperating {
     }
 
     public void commandPASS(User user, Command cmd) throws IllegalUserState {
-        String[] param = cmd.getParam();
+        String passwd = cmd.getParam();
         String username = user.getUsername();
         if (username == null || username.equals("")) {
             throw new IllegalUserState("500 Can't get the Username!");
@@ -230,7 +226,7 @@ public class UserOperating {
                 throw new IllegalUserState("430 This Server don't allow anonymous, please login!");
             }
         } else {
-            if (ServerCore.checkPASS(user, param)) {
+            if (ServerCore.checkPASS(user, passwd)) {
                 user.setReply("230 User " + username + " successfully logged in!\r");
                 user.setState(FTPState.FS_LOGIN);
                 log.info("User {} has just successfully logged in", username);
@@ -249,12 +245,12 @@ public class UserOperating {
     }
 
     public void commandPORT(User user, Command cmd) throws IllegalFTPCommandException {
-        String[] param = cmd.getParam();
-        if (param.length == 0) {
+        String tcpPort = cmd.getParam();
+        if (tcpPort == null || tcpPort.isEmpty()) {
             user.setFinished(false);
             throw new IllegalFTPCommandException("500 The Command PORT need a useable Parament!");
         }
-        String[] ip = param[0].split(",");
+        String[] ip = tcpPort.split(",");
         try {
             for (String item : ip) {
                 Integer.valueOf(item);
@@ -332,16 +328,16 @@ public class UserOperating {
     }
 
     public void commandTYPE(User user, Command cmd) throws IllegalFTPCommandException {
-        String[] param = cmd.getParam();
-        if (param.length == 0) {
+        String type = cmd.getParam();
+        if (type == null || type.isEmpty()) {
             user.setFinished(false);
             throw new IllegalFTPCommandException("500 The Command TYPE need a useable Parament!");
         }
-        if (param[0].equals("A")) {
+        if (type.equals("A")) {
             user.setType(FTPOption.FTYPE_ASCII);
             user.setReply("200 Change to ASCII mode!\r");
             user.setFinished(false);
-        } else if (param[0].equals("I")) {
+        } else if (type.equals("I")) {
             user.setType(FTPOption.FTYPE_BIN);
             user.setReply("200 change to BINARY mode\r");
             user.setFinished(false);
@@ -352,17 +348,14 @@ public class UserOperating {
     }
 
     public void commandUSER(User user, Command cmd) {
-        String[] param = cmd.getParam();
-        if (param.length > 0) {
-            user.setReply("331 User name okay, need password.\r");
-            user.setUsername(cmd.getParam()[0]);
-            user.setState(FTPState.FS_WAIT_PASS);
-            user.setFinished(false);
-        } else {
-            user.setReply("331 User name okay, need password.\r");
+        String username = cmd.getParam();
+        user.setReply("331 User name okay, need password.\r");
+        user.setState(FTPState.FS_WAIT_PASS);
+        user.setFinished(false);
+        if (username == null || username.isEmpty()) {
             user.setUsername("anonymous");
-            user.setState(FTPState.FS_WAIT_PASS);
-            user.setFinished(false);
+        } else {
+            user.setUsername(username);
         }
     }
 

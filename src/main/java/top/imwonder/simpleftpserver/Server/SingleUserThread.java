@@ -13,7 +13,6 @@ import top.imwonder.simpleftpserver.domain.Command;
 import top.imwonder.simpleftpserver.domain.FTPState;
 import top.imwonder.simpleftpserver.domain.User;
 import top.imwonder.simpleftpserver.util.CommandAnalyze;
-import top.imwonder.simpleftpserver.util.UserOperating;
 
 /*
  * @Author: Wonder2019 
@@ -43,8 +42,6 @@ public class SingleUserThread extends Thread {
             BufferedReader ctrlInput = new BufferedReader(new InputStreamReader(ctrlSocket.getInputStream()));
             PrintWriter ctrlOutput = new PrintWriter(ctrlSocket.getOutputStream(), true);
             while (!finished) {
-
-            UserOperating uo = new UserOperating();
                 fullcmd = ctrlInput.readLine();
                 log.debug(fullcmd);
                 if (fullcmd == null)
@@ -55,222 +52,222 @@ public class SingleUserThread extends Thread {
                         cmd.setUuid(id);
                         switch (user.getState()) {
                         case FS_WAIT_LOGIN:
-                            uo.commandUSER(user, cmd);
+                            user.commandUSER(user, cmd);
                             break;
                         case FS_WAIT_PASS:
-                            uo.commandPASS(user, cmd);
+                            user.commandPASS(user, cmd);
                             break;
                         case FS_LOGIN:
                             switch (cmd.getFc()) {
                             case ABOR:
-                                uo.commandABOR(user, cmd);
+                                user.commandABOR(user, cmd);
                                 break;
                             case ACCT:
-                                uo.commandACCT(user, cmd);
+                                user.commandACCT(user, cmd);
                                 break;
                             case ADAT:
-                                uo.commandADAT(user, cmd);
+                                user.commandADAT(user, cmd);
                                 break;
                             case ALLO:
-                                uo.commandALLO(user, cmd);
+                                user.commandALLO(user, cmd);
                                 break;
                             case APPE:
-                                uo.commandAPPE(user, cmd);
+                                user.commandAPPE(user, cmd);
                                 break;
                             case AUTH:
-                                uo.commandAUTH(user, cmd);
+                                user.commandAUTH(user, cmd);
                                 break;
                             case AVBL:
-                                uo.commandAVBL(user, cmd);
+                                user.commandAVBL(user, cmd);
                                 break;
                             case CCC:
-                                uo.commandCCC(user, cmd);
+                                user.commandCCC(user, cmd);
                                 break;
                             case CDUP:
-                                uo.commandCDUP(user, cmd);
+                                user.commandCDUP(user, cmd);
                                 break;
                             case CONF:
-                                uo.commandCONF(user, cmd);
+                                user.commandCONF(user, cmd);
                                 break;
                             case CSID:
-                                uo.commandCSID(user, cmd);
+                                user.commandCSID(user, cmd);
                                 break;
                             case CWD:
-                                uo.commandCWD(user, cmd);
+                                user.commandCWD(user, cmd);
                                 break;
                             case DELE:
-                                uo.commandDELE(user, cmd);
+                                user.commandDELE(user, cmd);
                                 break;
                             case DSIZ:
-                                uo.commandDSIZ(user, cmd);
+                                user.commandDSIZ(user, cmd);
                                 break;
                             case ENC:
-                                uo.commandENC(user, cmd);
+                                user.commandENC(user, cmd);
                                 break;
                             case EPRT:
-                                uo.commandEPRT(user, cmd);
+                                user.commandEPRT(user, cmd);
                                 break;
                             case EPSV:
-                                uo.commandEPSV(user, cmd);
+                                user.commandEPSV(user, cmd);
                                 break;
                             case FEAT:
-                                uo.commandFEAT(user, cmd);
+                                user.commandFEAT(user, cmd);
                                 break;
                             case HELP:
-                                uo.commandHELP(user, cmd);
+                                user.commandHELP(user, cmd);
                                 break;
                             case HOST:
-                                uo.commandHOST(user, cmd);
+                                user.commandHOST(user, cmd);
                                 break;
                             case LANG:
-                                uo.commandLANG(user, cmd);
+                                user.commandLANG(user, cmd);
                                 break;
                             case LIST:
-                                uo.commandLIST(user, cmd);
+                                user.commandLIST(user, cmd);
                                 break;
                             case LPRT:
-                                uo.commandLPRT(user, cmd);
+                                user.commandLPRT(user, cmd);
                                 break;
                             case LPSV:
-                                uo.commandLPSV(user, cmd);
+                                user.commandLPSV(user, cmd);
                                 break;
                             case MDTM:
-                                uo.commandMDTM(user, cmd);
+                                user.commandMDTM(user, cmd);
                                 break;
                             case MFCT:
-                                uo.commandMFCT(user, cmd);
+                                user.commandMFCT(user, cmd);
                                 break;
                             case MFF:
-                                uo.commandMFF(user, cmd);
+                                user.commandMFF(user, cmd);
                                 break;
                             case MFMT:
-                                uo.commandMFMT(user, cmd);
+                                user.commandMFMT(user, cmd);
                                 break;
                             case MIC:
-                                uo.commandMIC(user, cmd);
+                                user.commandMIC(user, cmd);
                                 break;
                             case MKD:
-                                uo.commandMKD(user, cmd);
+                                user.commandMKD(user, cmd);
                                 break;
                             case MLSD:
-                                uo.commandMLSD(user, cmd);
+                                user.commandMLSD(user, cmd);
                                 break;
                             case MLST:
-                                uo.commandMLST(user, cmd);
+                                user.commandMLST(user, cmd);
                                 break;
                             case MODE:
-                                uo.commandMODE(user, cmd);
+                                user.commandMODE(user, cmd);
                                 break;
                             case NLST:
-                                uo.commandNLST(user, cmd);
+                                user.commandNLST(user, cmd);
                                 break;
                             case NOOP:
-                                uo.commandNOOP(user, cmd);
+                                user.commandNOOP(user, cmd);
                                 break;
                             case OPTS:
-                                uo.commandOPTS(user, cmd);
+                                user.commandOPTS(user, cmd);
                                 break;
                             case PASS:
-                                uo.commandPASS(user, cmd);
+                                user.commandPASS(user, cmd);
                                 break;
                             case PASV:
-                                uo.commandPASV(user, cmd);
+                                user.commandPASV(user, cmd);
                                 break;
                             case PBSZ:
-                                uo.commandPBSZ(user, cmd);
+                                user.commandPBSZ(user, cmd);
                                 break;
                             case PORT:
-                                uo.commandPORT(user, cmd);
+                                user.commandPORT(user, cmd);
                                 break;
                             case PROT:
-                                uo.commandPROT(user, cmd);
+                                user.commandPROT(user, cmd);
                                 break;
                             case PWD:
-                                uo.commandPWD(user, cmd);
+                                user.commandPWD(user, cmd);
                                 break;
                             case QUIT:
-                                uo.commandQUIT(user, cmd);
+                                user.commandQUIT(user, cmd);
                                 break;
                             case REIN:
-                                uo.commandREIN(user, cmd);
+                                user.commandREIN(user, cmd);
                                 break;
                             case REST:
-                                uo.commandREST(user, cmd);
+                                user.commandREST(user, cmd);
                                 break;
                             case RETR:
-                                uo.commandRETR(user, cmd);
+                                user.commandRETR(user, cmd);
                                 break;
                             case RMD:
-                                uo.commandRMD(user, cmd);
+                                user.commandRMD(user, cmd);
                                 break;
                             case RMDA:
-                                uo.commandRMDA(user, cmd);
+                                user.commandRMDA(user, cmd);
                                 break;
                             case RNFR:
-                                uo.commandRNFR(user, cmd);
+                                user.commandRNFR(user, cmd);
                                 break;
                             case RNTO:
-                                uo.commandRNTO(user, cmd);
+                                user.commandRNTO(user, cmd);
                                 break;
                             case SITE:
-                                uo.commandSITE(user, cmd);
+                                user.commandSITE(user, cmd);
                                 break;
                             case SIZE:
-                                uo.commandSIZE(user, cmd);
+                                user.commandSIZE(user, cmd);
                                 break;
                             case SMNT:
-                                uo.commandSMNT(user, cmd);
+                                user.commandSMNT(user, cmd);
                                 break;
                             case SPSV:
-                                uo.commandSPSV(user, cmd);
+                                user.commandSPSV(user, cmd);
                                 break;
                             case STAT:
-                                uo.commandSTAT(user, cmd);
+                                user.commandSTAT(user, cmd);
                                 break;
                             case STOR:
-                                uo.commandSTOR(user, cmd);
+                                user.commandSTOR(user, cmd);
                                 break;
                             case STOU:
-                                uo.commandSTOU(user, cmd);
+                                user.commandSTOU(user, cmd);
                                 break;
                             case STRU:
-                                uo.commandSTRU(user, cmd);
+                                user.commandSTRU(user, cmd);
                                 break;
                             case SYST:
-                                uo.commandSYST(user, cmd);
+                                user.commandSYST(user, cmd);
                                 break;
                             case THMB:
-                                uo.commandTHMB(user, cmd);
+                                user.commandTHMB(user, cmd);
                                 break;
                             case TYPE:
-                                uo.commandTYPE(user, cmd);
+                                user.commandTYPE(user, cmd);
                                 break;
                             case USER:
-                                uo.commandUSER(user, cmd);
+                                user.commandUSER(user, cmd);
                                 break;
                             case XCUP:
-                                uo.commandXCUP(user, cmd);
+                                user.commandXCUP(user, cmd);
                                 break;
                             case XMKD:
-                                uo.commandXMKD(user, cmd);
+                                user.commandXMKD(user, cmd);
                                 break;
                             case XPWD:
-                                uo.commandXPWD(user, cmd);
+                                user.commandXPWD(user, cmd);
                                 break;
                             case XRCP:
-                                uo.commandXRCP(user, cmd);
+                                user.commandXRCP(user, cmd);
                                 break;
                             case XRMD:
-                                uo.commandXRMD(user, cmd);
+                                user.commandXRMD(user, cmd);
                                 break;
                             case XRSQ:
-                                uo.commandXRSQ(user, cmd);
+                                user.commandXRSQ(user, cmd);
                                 break;
                             case XSEM:
-                                uo.commandXSEM(user, cmd);
+                                user.commandXSEM(user, cmd);
                                 break;
                             case XSEN:
-                                uo.commandXSEN(user, cmd);
+                                user.commandXSEN(user, cmd);
                                 break;
                             default:
                                 throw new IllegalFTPCommandException(cmd.getCmd());

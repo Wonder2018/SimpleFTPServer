@@ -5,7 +5,7 @@ import java.net.Socket;
 import lombok.Data;
 
 @Data
-public class User {
+public class User extends UserTemplate{
     private String uuid;
     private String username;
     private String passwd;
