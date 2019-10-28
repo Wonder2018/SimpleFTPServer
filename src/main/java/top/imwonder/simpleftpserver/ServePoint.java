@@ -225,15 +225,11 @@ public class ServePoint extends Thread {
     // 用户名是否正确
     boolean commandUSER() {
         System.out.println(cmd);
-        if (true) {
             reply = "331 用户名正确,需要口令\r";
             user = param;
             state = FTPState.FS_WAIT_PASS;
             return false;
-        } else {
-            reply = "501 参数语法错误,用户名不匹配\r";
-            return true;
-        }
+        
 
     }
 
@@ -368,7 +364,6 @@ public class ServePoint extends Thread {
                 System.out.println("in!");
                 File f = new File(dir);
                 String[] dirStructure = f.list();// 指定路径中的文件名数组,不包括当前路径或父路径
-                String fileType;
                 System.out.println(dirStructure.length);
                 // for (int i = 0; i < dirStructure.length; i++) {
                 // if (dirStructure[i].indexOf(".") != -1) {
@@ -381,7 +376,7 @@ public class ServePoint extends Thread {
                 // (fileType+dirStructure[i]);
                 // }
                 dout.println("drw-rw-rw- 1 ftp ftp 0 Otc 12 2019 D多行假单胞菌FT\r");
-                dout.println("-rw-rw-rw- 1 ftp ftp 30 Otc 12 2019 DFTC.txt\r");
+                dout.println("-rw-rw-rw- 1 ftp ftp 28 Otc 12 2019 1.txt\r");
 
             }
             dout.close();
@@ -423,15 +418,14 @@ public class ServePoint extends Thread {
             }
             requestfile = addTail(dir) + param;
         }
-
         if (isrest) {
-
         } else {
             if (type == FTPOption.FTYPE_BIN) // bin
             {
                 try {
+                    System.out.println(requestfile);
                     ctrlOutput.println("150 文件状态正常,以二进治方式打开文件:  " + requestfile + "\r");
-                    dataSocket = new Socket(remoteHost, remotePort, InetAddress.getLocalHost(), 20);
+                    dataSocket = new Socket(remoteHost, remotePort, ctrlSocket.getLocalAddress(), 20);
                     BufferedInputStream fin = new BufferedInputStream(new FileInputStream(requestfile));
                     PrintStream dataOutput = new PrintStream(dataSocket.getOutputStream(), true);
                     byte[] buf = new byte[1024]; // 目标缓冲区
@@ -450,7 +444,6 @@ public class ServePoint extends Thread {
                     reply = "451 请求失败: 传输出故障\r";
                     return false;
                 }
-
             }
             if (type == FTPOption.FTYPE_ASCII)// ascII
             {
@@ -475,7 +468,6 @@ public class ServePoint extends Thread {
             }
         }
         return false;
-
     }
 
     // commandSTOR 方法

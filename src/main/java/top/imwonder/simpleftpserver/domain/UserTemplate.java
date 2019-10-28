@@ -1,20 +1,19 @@
 package top.imwonder.simpleftpserver.domain;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Date;
-import java.util.Locale;
 
 import lombok.extern.slf4j.Slf4j;
 import top.imwonder.simpleftpserver.Exception.IllegalFTPCommandException;
+import top.imwonder.simpleftpserver.Exception.IllegalFTPState;
 import top.imwonder.simpleftpserver.Exception.IllegalUserState;
 import top.imwonder.simpleftpserver.Server.ServerCore;
-import top.imwonder.simpleftpserver.domain.Command;
-import top.imwonder.simpleftpserver.domain.FTPOption;
-import top.imwonder.simpleftpserver.domain.FTPState;
-import top.imwonder.simpleftpserver.domain.User;
+import top.imwonder.simpleftpserver.util.FileOperatingUtil;
+import top.imwonder.simpleftpserver.util.PathUtil;
 
 @Slf4j
 public abstract class UserTemplate {
@@ -52,29 +51,41 @@ public abstract class UserTemplate {
     public void commandCSID(User user, Command cmd) {
     }
 
-    public void commandCWD(User user, Command cmd) {
+    public void commandCWD(User user, Command cmd) throws IllegalFTPCommandException, IOException {
         String path = cmd.getParam();
         if (path != null && !path.isEmpty()) {
-            if (path.startsWith("/")) {
-                path = user.getRootDir() + path.substring(1);
-            } else {
-                path = user.getCurrentDir() + path;
+            try {
+                path = PathUtil.getPathRequested(user.getRootDir(), user.getCurrentDir(), path);
+            } catch (IOException e) {
+                throw new IllegalFTPCommandException("550 This path does not exist!");
+            } catch (IllegalArgumentException e) {
+                throw new IOException("500 Server Error");
             }
-            log.info("user want to cd :{}",path);
             File newDir = new File(path);
             if (newDir.exists()) {
                 user.setCurrentDir(path);
                 user.setReply("250 directory change to: " + path.replace(user.getRootDir(), "/") + "!\r");
             } else {
-                user.setReply("550 This path does not exist!\r");
+                throw new IllegalFTPCommandException("550 This path does not exist!");
             }
         } else {
             user.setReply("212 The directory has not changed!\r");
         }
-        user.setFinished(false);
+        
     }
 
-    public void commandDELE(User user, Command cmd) {
+    public void commandDELE(User user, Command cmd) throws IllegalArgumentException, IOException {
+        String targetPath = PathUtil.getPathRequested(user.getRootDir(), user.getCurrentDir(), cmd.getParam());
+        if (!targetPath.startsWith(user.getRootDir())) {
+            throw new IOException("450 Permission denied!");
+        }
+        File targetFile = new File(targetPath);
+        if(targetFile.exists()){
+            targetFile.delete();
+            user.setReply("250 File "+targetPath.substring(targetPath.lastIndexOf("/")+1)+" is deleted!\r");
+            return;
+        }
+        user.setReply("550 File "+targetPath.substring(targetPath.lastIndexOf("/")+1)+" is not exists!\r");
     }
 
     public void commandDSIZ(User user, Command cmd) {
@@ -104,69 +115,39 @@ public abstract class UserTemplate {
     public void commandLIST(User user, Command cmd) throws IOException {
         String path = cmd.getParam();
         try {
-            Socket dataSocket = new Socket(user.getIp(), user.getPort(), user.getCtrlSocket().getLocalAddress(), (int)(Math.random()*64000+1024));
+            Socket dataSocket = new Socket(user.getIp(), user.getPort(), user.getCtrlSocket().getLocalAddress(),(int) (Math.random() * 64000 + 1024));
             PrintWriter ctrlOutput = new PrintWriter(user.getCtrlSocket().getOutputStream());
             PrintWriter dout = new PrintWriter(dataSocket.getOutputStream(), true);
             ctrlOutput.println("150 print file list...\r");
             ctrlOutput.flush();
             if (path == null || path.isEmpty() || path.equals("-a")) {
-                dout.print(generateFileList(new File(user.getCurrentDir())));
+                dout.print(PathUtil.generateFileList(new File(user.getCurrentDir())));
             } else {
-                if (path.startsWith("/")) {
-                    path = user.getRootDir() + path.substring(1);
-                    File newDir = new File(path);
-                    if (newDir.exists()) {
-                        dout.print(generateFileList(newDir).getBytes());
-                    }
-                } else {
-                    path = user.getCurrentDir() + path;
-                    File newDir = new File(path);
-                    if (newDir.exists()) {
-                        dout.print(generateFileList(newDir));
-                    }
+                try {
+                    path = PathUtil.getPathRequested(user.getRootDir(), user.getCurrentDir(), path);
+                } catch (IOException e) {
+                    dout.close();
+                    dataSocket.close();
+                    throw new IllegalFTPCommandException("550 This path does not exist!");
+                } catch (IllegalArgumentException e) {
+                    dout.close();
+                    dataSocket.close();
+                    throw new IOException("500 Server Error");
+                }
+                File newDir = new File(path);
+                if (newDir.exists()) {
+                    dout.print(PathUtil.generateFileList(newDir));
                 }
             }
             dout.close();
             dataSocket.close();
-            user.setFinished(false);
+            
             user.setReply("226 print successfully\r");
         } catch (IOException e) {
-            e.printStackTrace();
-            log.info("a");
             throw new IOException("451 Requested action aborted: local error in processing");
         } catch (Exception e) {
-            log.info("b");
             throw new IOException("500 FileRead Error!");
         }
-    }
-
-    private String generateFileList(File dir) throws Exception {
-        Date time;
-        File[] fileList = dir.listFiles();
-        String listBuffer = "";
-        for (File item : fileList) {
-            time = new Date(item.lastModified());
-            listBuffer+=item.isDirectory() ? "d" : "-";
-            String perm = item.canRead() ? "r" : "-";
-            long size = 0;
-            perm += item.canWrite() ? "w-" : "--";
-            listBuffer+=perm;
-            listBuffer+=perm;
-            listBuffer+=perm;
-            if (item.isDirectory()) {
-                listBuffer+=" ";
-                listBuffer+=item.list().length;
-            } else {
-                size = item.length();
-                listBuffer+=" 0";
-            }
-            listBuffer+=" ftp ftp ";
-            listBuffer+=size;
-            listBuffer+=String.format(new Locale("en")," %tb %te %tY ", time, time, time);
-            listBuffer+=item.getName();
-            listBuffer+="\r\n";
-        }
-        return listBuffer.toString();
     }
 
     public void commandLPRT(User user, Command cmd) {
@@ -199,10 +180,35 @@ public abstract class UserTemplate {
     public void commandMLST(User user, Command cmd) {
     }
 
-    public void commandMODE(User user, Command cmd) {
+    public void commandMODE(User user, Command cmd) throws IllegalFTPCommandException {
+        String mode = cmd.getParam();
+        if (mode == null || mode.isEmpty()) {
+            throw new IllegalFTPCommandException("501 The Command MODE need a useable Parament!");
+        }
+        switch (mode) {
+        case "S":
+            user.setMode(FTPOption.FMODE_STREAM);
+            user.setReply("200 the mode Change to Stream!\r");
+            
+            break;
+        case "C":
+            user.setMode(FTPOption.FMODE_COMPRESSED);
+            user.setReply("200 the mode change to compressed!\r");
+            
+            break;
+        case "B":
+            user.setMode(FTPOption.FMODE_BLOCK);
+            user.setReply("200 the mod change to block!\r");
+            
+            break;
+        default:
+            throw new IllegalFTPCommandException("501 The Command MODE need a useable Parament!");
+        }
+
     }
 
-    public void commandNLST(User user, Command cmd) {
+    public void commandNLST(User user, Command cmd) throws IOException {
+        commandLIST(user, cmd);
     }
 
     public void commandNOOP(User user, Command cmd) {
@@ -220,7 +226,7 @@ public abstract class UserTemplate {
             if (ServerCore.allowedAnonymous()) {
                 user.setReply("230 User " + username + " successfully logged in!\r");
                 user.setState(FTPState.FS_LOGIN);
-                user.setFinished(false);
+                
                 log.info("User {} has just successfully logged in", username);
             } else {
                 throw new IllegalUserState("430 This Server don't allow anonymous, please login!");
@@ -230,7 +236,7 @@ public abstract class UserTemplate {
                 user.setReply("230 User " + username + " successfully logged in!\r");
                 user.setState(FTPState.FS_LOGIN);
                 log.info("User {} has just successfully logged in", username);
-                user.setFinished(false);
+                
             } else {
                 user.setReply("530 User " + username + " password is incorrect\r");
                 user.setFinished(true);
@@ -247,8 +253,7 @@ public abstract class UserTemplate {
     public void commandPORT(User user, Command cmd) throws IllegalFTPCommandException {
         String tcpPort = cmd.getParam();
         if (tcpPort == null || tcpPort.isEmpty()) {
-            user.setFinished(false);
-            throw new IllegalFTPCommandException("500 The Command PORT need a useable Parament!");
+            throw new IllegalFTPCommandException("501 The Command PORT need a useable Parament!");
         }
         String[] ip = tcpPort.split(",");
         try {
@@ -256,13 +261,12 @@ public abstract class UserTemplate {
                 Integer.valueOf(item);
             }
         } catch (NumberFormatException e) {
-            user.setFinished(false);
-            throw new IllegalFTPCommandException("500 The Command PORT need a useable Parament!");
+            throw new IllegalFTPCommandException("501 The Command PORT need a useable Parament!");
         }
         user.setIp(ip[0] + "." + ip[1] + "." + ip[2] + "." + ip[3]);
         user.setPort(Integer.valueOf(ip[4]) * 256 + Integer.valueOf(ip[5]));
         user.setReply("200 The port is set successfully.\r");
-        user.setFinished(false);
+        
     }
 
     public void commandPROT(User user, Command cmd) {
@@ -280,7 +284,34 @@ public abstract class UserTemplate {
     public void commandREST(User user, Command cmd) {
     }
 
-    public void commandRETR(User user, Command cmd) {
+    public void commandRETR(User user, Command cmd) throws IOException, IllegalFTPState {
+        String requestPath = PathUtil.getPathRequested(user.getRootDir(), user.getCurrentDir(), cmd.getParam());
+        File requestFile = new File(requestPath);
+        if (requestFile.isDirectory() || !requestFile.exists()) {
+            throw new IOException("550 The File requested is not exists!");
+        }
+        try {
+            PrintWriter ctrlOutput = new PrintWriter(user.getCtrlSocket().getOutputStream(), true);
+            Socket dataSocket = new Socket(user.getIp(), user.getPort(), user.getCtrlSocket().getLocalAddress(), (int) (Math.random() * 64000 + 1024));
+            switch (user.getType()) {
+            case FTYPE_BIN:
+                ctrlOutput.println("150 Transfer Binary file: " + requestPath.substring(requestPath.lastIndexOf("/")+1) + "\r");
+                FileOperatingUtil.transferBinaryFile(new FileInputStream(requestFile), dataSocket.getOutputStream());
+                dataSocket.close();
+                user.setReply("226 File transfered successfulli!\r");
+                break;
+            case FTYPE_ASCII:
+                ctrlOutput.println("150 Transfer Ascii file: " + requestPath.substring(requestPath.lastIndexOf("/")+1) + "\r");
+                FileOperatingUtil.transferAsciiFile(new FileInputStream(requestFile), dataSocket.getOutputStream(),true);
+                dataSocket.close();
+                user.setReply("226 File transfered successfulli!\r");
+                break;
+            default:
+                throw new IllegalFTPState("501 Illegal File TYPE \""+user.getType()+"\"!");
+            }
+        } catch (IOException e) {
+            throw new IOException("451 Transfer Error!");
+        }
     }
 
     public void commandRMD(User user, Command cmd) {
@@ -310,7 +341,34 @@ public abstract class UserTemplate {
     public void commandSTAT(User user, Command cmd) {
     }
 
-    public void commandSTOR(User user, Command cmd) {
+    public void commandSTOR(User user, Command cmd) throws IllegalArgumentException, IOException, IllegalFTPState {
+        String storePath = PathUtil.getPathRequested(user.getRootDir(), user.getCurrentDir(), cmd.getParam());
+        if (!storePath.startsWith(user.getRootDir())) {
+            throw new IOException("450 Permission denied!");
+        }
+        File storeFile = new File(storePath);
+        try {
+            PrintWriter ctrlOutput = new PrintWriter(user.getCtrlSocket().getOutputStream(), true);
+            Socket dataSocket = new Socket(user.getIp(), user.getPort(), user.getCtrlSocket().getLocalAddress(), (int) (Math.random() * 64000 + 1024));
+            switch (user.getType()) {
+            case FTYPE_BIN:
+                ctrlOutput.println("150 Transfer Binary file: " + storePath.substring(storePath.lastIndexOf("/")+1) + "\r");
+                FileOperatingUtil.transferBinaryFile(dataSocket.getInputStream(), new FileOutputStream(storeFile));
+                dataSocket.close();
+                user.setReply("226 File transfered successfulli!\r");
+                break;
+            case FTYPE_ASCII:
+                ctrlOutput.println("150 Transfer Ascii file: " + storePath.substring(storePath.lastIndexOf("/")+1) + "\r");
+                FileOperatingUtil.transferAsciiFile(dataSocket.getInputStream(), new FileOutputStream(storeFile));
+                dataSocket.close();
+                user.setReply("226 File transfered successfulli!\r");
+                break;
+            default:
+                throw new IllegalFTPState("501 Illegal File TYPE \""+user.getType()+"\"!");
+            }
+        } catch (IOException e) {
+            throw new IOException("451 Transfer Error!");
+        }
     }
 
     public void commandSTOU(User user, Command cmd) {
@@ -321,7 +379,7 @@ public abstract class UserTemplate {
 
     public void commandSYST(User user, Command cmd) {
         user.setReply("215 Unix Type: L8 - Simple FTP Server\r");
-        user.setFinished(false);
+        
     }
 
     public void commandTHMB(User user, Command cmd) {
@@ -330,20 +388,21 @@ public abstract class UserTemplate {
     public void commandTYPE(User user, Command cmd) throws IllegalFTPCommandException {
         String type = cmd.getParam();
         if (type == null || type.isEmpty()) {
-            user.setFinished(false);
-            throw new IllegalFTPCommandException("500 The Command TYPE need a useable Parament!");
+            throw new IllegalFTPCommandException("501 The Command TYPE need a useable Parament!");
         }
-        if (type.equals("A")) {
+        switch (type) {
+        case "A":
             user.setType(FTPOption.FTYPE_ASCII);
-            user.setReply("200 Change to ASCII mode!\r");
-            user.setFinished(false);
-        } else if (type.equals("I")) {
+            user.setReply("200 the type Change to ASCII!\r");
+            
+            break;
+        case "I":
             user.setType(FTPOption.FTYPE_BIN);
-            user.setReply("200 change to BINARY mode\r");
-            user.setFinished(false);
-        } else {
-            user.setFinished(false);
-            throw new IllegalFTPCommandException("500 The Command TYPE need a useable Parament!");
+            user.setReply("200 the type change to BINARY!\r");
+            
+            break;
+        default:
+            throw new IllegalFTPCommandException("501 The Command TYPE need a useable Parament!");
         }
     }
 
@@ -351,7 +410,7 @@ public abstract class UserTemplate {
         String username = cmd.getParam();
         user.setReply("331 User name okay, need password.\r");
         user.setState(FTPState.FS_WAIT_PASS);
-        user.setFinished(false);
+        
         if (username == null || username.isEmpty()) {
             user.setUsername("anonymous");
         } else {

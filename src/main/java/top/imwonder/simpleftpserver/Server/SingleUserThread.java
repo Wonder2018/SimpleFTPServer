@@ -8,6 +8,7 @@ import java.net.Socket;
 
 import lombok.extern.slf4j.Slf4j;
 import top.imwonder.simpleftpserver.Exception.IllegalFTPCommandException;
+import top.imwonder.simpleftpserver.Exception.IllegalFTPState;
 import top.imwonder.simpleftpserver.Exception.IllegalUserState;
 import top.imwonder.simpleftpserver.domain.Command;
 import top.imwonder.simpleftpserver.domain.FTPState;
@@ -18,7 +19,7 @@ import top.imwonder.simpleftpserver.util.CommandAnalyze;
  * @Author: Wonder2019 
  * @Date: 2019-10-27 11:28:51 
  * @Last Modified by: Wonder2019
- * @Last Modified time: 2019-10-27 12:03:01
+ * @Last Modified time: 2019-10-28 21:42:25
  */
 
 @Slf4j
@@ -278,11 +279,15 @@ public class SingleUserThread extends Thread {
                         }
                     } catch (IllegalFTPCommandException e) {
                         log.debug("Unknow FTP Command \"{}\" !!", e.getMessage());
-                        user.setReply(e.getMessage()+"\r");
+                        user.setReply(e.getMessage() + "\r");
                         user.setFinished(false);
-                    } catch(IOException e){
-                        log.debug("Exception thrown：{}",e.getMessage());
-                        user.setReply(e.getMessage()+"\r");
+                    } catch (IOException e) {
+                        log.debug("Exception thrown：{}", e.getMessage());
+                        user.setReply(e.getMessage() + "\r");
+                        user.setFinished(false);
+                    } catch (IllegalFTPState e) {
+                        log.debug("Unknow FTP State \"{}\" !!", e.getMessage());
+                        user.setReply(e.getMessage() + "\r");
                         user.setFinished(false);
                     }
                     finished = user.isFinished();
