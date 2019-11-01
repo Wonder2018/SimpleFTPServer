@@ -6,6 +6,8 @@ public enum FTPOption {
     FMODE_STREAM, // 流模式
     FMODE_BLOCK, // 块模式
     FMODE_COMPRESSED, // 压缩模式
+    FTRANS_PASV,
+    FTRANS_PORT,
     FSTRU_FILE, //
     FSTRU_PAGE//
 }

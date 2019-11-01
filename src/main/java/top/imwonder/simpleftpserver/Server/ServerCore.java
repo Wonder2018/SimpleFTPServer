@@ -23,14 +23,15 @@ public class ServerCore extends Thread {
                 // 接受客户端请求
                 Socket incoming = s.accept();
                 PrintWriter out = new PrintWriter(incoming.getOutputStream(), true);// 文本文本输出流
-                out.println("220 Wellcome to Simple FTP Server Powered with ❤ by www.imwonder.top\r");
+                // out.println("220-Wellcome to Simple FTP Server!\n");
                 // out.println("    ┌─┐ ┌─┐ ┌─┐               ┌─┐          ┌───────┬───────┐ ┌─┐ ┌─────┐");
                 // out.println("    │ │ │ │ │ │               │ │          │ ┌───┐ │ ┌───┐ ├─┘ │ │ ┌─┐ │");
                 // out.println("    │ │ │ │ │ ├─────┬────┐┌───┘ ├─────┬───┐└─┘ ┌─┘ │ │ │ │ ├─┐ │ │ └─┘ │");
                 // out.println("    │ └─┘ └─┘ │ ┌─┐ │ ┌─┐└┤ ┌─┐ │ │───┤ ┌─┘┌───┘ ┌─┤ │ │ │ │ │ │ └───┐ │");
                 // out.println("    └─┐ ┌─┐ ┌─┤ └─┘ │ │ │ │ └─┘ │ │───┤ │  │ │ └───┤ └───┘ ├─┘ └─┬───┘ │");
                 // out.println("      └─┘ └─┘ └─────┴─┘ └─┴─────┴─────┴─┘  └───────┴───────┴─────┴─────┘");
-                // out.println("    Powered with ❤ by www.imwonder.top\r");// 命令正确的提示
+                // out.println("    Powered with ❤ by www.imwonder.top\n");
+                out.println("220 Wellcome to Simple FTP Server! Connected!\r");// 命令正确的提示
                 // 创建服务线程
                 User user = new User(IdGen.uuid(), incoming);
                 user.setRootDir("/home/wonder2019/");
