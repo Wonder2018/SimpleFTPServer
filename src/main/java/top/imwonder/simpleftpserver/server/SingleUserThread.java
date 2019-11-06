@@ -1,4 +1,4 @@
-package top.imwonder.simpleftpserver.Server;
+package top.imwonder.simpleftpserver.server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,11 +7,11 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import lombok.extern.slf4j.Slf4j;
-import top.imwonder.simpleftpserver.Exception.IllegalFTPCommandException;
-import top.imwonder.simpleftpserver.Exception.IllegalUserState;
 import top.imwonder.simpleftpserver.domain.Command;
 import top.imwonder.simpleftpserver.domain.FTPState;
 import top.imwonder.simpleftpserver.domain.User;
+import top.imwonder.simpleftpserver.exception.IllegalFTPCommandException;
+import top.imwonder.simpleftpserver.exception.IllegalUserState;
 import top.imwonder.simpleftpserver.util.CommandAnalyze;
 
 /*
@@ -52,7 +52,7 @@ public class SingleUserThread extends Thread {
                         CommandAnalyze.execute(user, cmd);
                     } catch (IllegalFTPCommandException e) {
                         log.debug("Unknow FTP Command \"{}\" !!", e.getMessage());
-                        user.setReply("Unknow FTP Command '" + e.getMessage() + "'!");
+                        user.setReply("500 SUnknow FTP Command '" + e.getMessage() + "'!");
                         user.setFinished(false);
                     }
                     finished = user.isFinished();

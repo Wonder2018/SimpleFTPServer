@@ -1,9 +1,9 @@
 package top.imwonder.simpleftpserver.util;
 
-import top.imwonder.simpleftpserver.Exception.IllegalFTPCommandException;
-import top.imwonder.simpleftpserver.Exception.IllegalUserState;
 import top.imwonder.simpleftpserver.domain.Command;
 import top.imwonder.simpleftpserver.domain.User;
+import top.imwonder.simpleftpserver.exception.IllegalFTPCommandException;
+import top.imwonder.simpleftpserver.exception.IllegalUserState;
 
 /*
  * @Author: Wonder2019 

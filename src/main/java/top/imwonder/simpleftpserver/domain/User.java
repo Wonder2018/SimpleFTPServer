@@ -30,7 +30,7 @@ public class User extends UserTemplate {
     // 用户设置
     private String rootDir;
     private String currentDir;
-    private FTPOption type; // 文件类型(ascii 或 bin)
+    private FTPOption type = FTPOption.FTYPE_BIN; // 文件类型(ascii 或 bin)
     private FTPOption mode; // 传输模式( 流 块 压缩 )
 
     // 状态

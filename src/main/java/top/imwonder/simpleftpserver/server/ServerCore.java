@@ -1,4 +1,4 @@
-package top.imwonder.simpleftpserver.Server;
+package top.imwonder.simpleftpserver.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;

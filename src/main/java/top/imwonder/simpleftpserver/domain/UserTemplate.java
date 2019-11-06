@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import lombok.extern.slf4j.Slf4j;
-import top.imwonder.simpleftpserver.Server.ServerCore;
+import top.imwonder.simpleftpserver.server.ServerCore;
 import top.imwonder.simpleftpserver.util.FileOperatingUtil;
 import top.imwonder.simpleftpserver.util.PathUtil;
 

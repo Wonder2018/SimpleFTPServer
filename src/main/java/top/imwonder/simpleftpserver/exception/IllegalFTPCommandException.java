@@ -1,4 +1,4 @@
-package top.imwonder.simpleftpserver.Exception;
+package top.imwonder.simpleftpserver.exception;
 /*
  * @Author: Wonder2019 
  * @Date: 2019-10-27 11:25:34 
