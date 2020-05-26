@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Locale;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PathUtil {
     public static String generateFileList(File dir) throws Exception {
         Date time;
@@ -20,8 +23,9 @@ public class PathUtil {
             listBuffer.append(perm);
             listBuffer.append(perm);
             if (item.isDirectory()) {
+                log.info("{}",item);
                 listBuffer.append("\t");
-                listBuffer.append(item.list().length);
+                listBuffer.append(0);
             } else {
                 size = item.length();
                 listBuffer.append("\t0");

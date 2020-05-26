@@ -1,3 +1,9 @@
+/*
+ * @Author: Wonder2019 
+ * @Date: 2019-11-14 17:29:01 
+ * @Last Modified by:   Wonder2019 
+ * @Last Modified time: 2019-11-14 17:29:01 
+ */
 package top.imwonder.simpleftpserver.util;
 
 import java.io.BufferedInputStream;
@@ -9,12 +15,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-/*
- * @Author: Wonder2019 
- * @Date: 2019-10-28 22:16:44 
- * @Last Modified by: Wonder2019
- * @Last Modified time: 2019-10-28 22:25:42
- */
 public class FileOperatingUtil {
     public static void transferBinaryFile(InputStream in, OutputStream out) throws IOException {
         BufferedInputStream bis = new BufferedInputStream(in);

@@ -40,7 +40,7 @@ public final class Application {
         //     log.warn("Can not read Font File, Use System font!");
         // }
         // new MainFrame();
-        log.info("listening port:{}", 2121);
+        log.info("listening port:{}", 21);
         new ServerCore().start();
     }
 

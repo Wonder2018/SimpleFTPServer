@@ -34,7 +34,7 @@ public class ServerCore extends Thread {
                 out.println("220 Wellcome to Simple FTP Server! Connected!\r");// 命令正确的提示
                 // 创建服务线程
                 User user = new User(IdGen.uuid(), incoming);
-                user.setRootDir("/home/wonder2019/");
+                user.setRootDir("/media/wonder2019/");
                 user.setCurrentDir(user.getRootDir());
                 SingleUserThread sut = new SingleUserThread(user);
                 // ServePoint sut = new ServePoint(incoming, 12);
