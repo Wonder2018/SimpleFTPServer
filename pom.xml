@@ -92,25 +92,25 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
+            </plugin> -->
 
             <!--
                 You can run jacoco in the default profile with:
                 mvn jacoco:prepare-agent test jacoco:report
             -->
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.1</version>
-            </plugin>
+            </plugin> -->
         </plugins>
     </build>
     <reporting>
         <plugins>
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.0.0</version>
@@ -122,7 +122,7 @@
                     <configLocation>com/github/ngeor/checkstyle.xml</configLocation>
                     <includeTestSourceDirectory>true</includeTestSourceDirectory>
                 </configuration>
-            </plugin>
+            </plugin> -->
         </plugins>
     </reporting>
 
@@ -132,7 +132,7 @@
         You can run it with mvn -P jacoco test.
         It also activates itself on Travis.
         -->
-        <profile>
+        <!-- <profile>
             <id>jacoco</id>
             <activation>
                 <property>
@@ -163,14 +163,14 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
+        </profile> -->
 
         <!--
         For the Travis profile:
         - we want to break the build on any checkstyle violation.
         - we want to be able to publish coverage report to coveralls.
         -->
-        <profile>
+        <!-- <profile>
             <id>travis</id>
             <activation>
                 <property>
@@ -199,6 +199,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
+        </profile> -->
     </profiles>
 </project>

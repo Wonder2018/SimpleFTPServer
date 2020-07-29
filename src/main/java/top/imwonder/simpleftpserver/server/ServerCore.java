@@ -16,10 +16,8 @@ public class ServerCore extends Thread {
     private Map<String, SingleUserThread> users = new HashMap<String, SingleUserThread>();
 
     public void run() {
-        try {
-            @SuppressWarnings("all")
-            ServerSocket s = new ServerSocket(2121);
-            for (;;) {
+        try (ServerSocket s = new ServerSocket(2121)){
+            while (true) {
                 // 接受客户端请求
                 Socket incoming = s.accept();
                 PrintWriter out = new PrintWriter(incoming.getOutputStream(), true);// 文本文本输出流
@@ -39,7 +37,7 @@ public class ServerCore extends Thread {
                 SingleUserThread sut = new SingleUserThread(user);
                 // ServePoint sut = new ServePoint(incoming, 12);
                 sut.start();
-                users.put(user.getUuid(), sut); // 将此用户线程加入到这个 ArrayList 中
+                users.put(user.getUuid(), sut); // 将此用户线程加入到 ArrayList 中
                 log.info("A user connected !");
             }
         } catch (IOException e) {

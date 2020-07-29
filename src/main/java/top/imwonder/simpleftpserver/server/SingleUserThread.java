@@ -37,9 +37,9 @@ public class SingleUserThread extends Thread {
         String fullcmd;
         boolean finished = user.isFinished();
         Socket ctrlSocket = user.getCtrlSocket();
-        try {
-            BufferedReader ctrlInput = new BufferedReader(new InputStreamReader(ctrlSocket.getInputStream()));
-            PrintWriter ctrlOutput = new PrintWriter(ctrlSocket.getOutputStream(), true);
+        try (BufferedReader ctrlInput = new BufferedReader(new InputStreamReader(ctrlSocket.getInputStream()));
+                PrintWriter ctrlOutput = new PrintWriter(ctrlSocket.getOutputStream(), true);) {
+
             while (!finished) {
                 fullcmd = ctrlInput.readLine();
                 log.debug(fullcmd);
@@ -52,7 +52,7 @@ public class SingleUserThread extends Thread {
                         CommandAnalyze.execute(user, cmd);
                     } catch (IllegalFTPCommandException e) {
                         log.debug("Unknow FTP Command \"{}\" !!", e.getMessage());
-                        user.setReply("500 SUnknow FTP Command '" + e.getMessage() + "'!");
+                        user.setReply("500 Unknow FTP Command '" + e.getMessage() + "'!");
                         user.setFinished(false);
                     }
                     finished = user.isFinished();
@@ -60,7 +60,6 @@ public class SingleUserThread extends Thread {
                 ctrlOutput.println(user.getReply() + "\r");
                 ctrlOutput.flush();
             }
-            ctrlSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (IllegalUserState e) {
